@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mes Cours - Étudiant</title>
+    <link rel="stylesheet" th:href="@{/css/tailwind.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🎓 Espace Étudiant</h2>
+            </div>
+            
+            <div class="sidebar-user">
+                <div class="user-avatar">E</div>
+                <div class="user-info">
+                    <h3>Étudiant</h3>
+                    <div class="user-role">👨‍🎓 Étudiant</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a th:href="@{/student/dashboard}" class="nav-item">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a th:href="@{/student/courses}" class="nav-item active">
+                    <span class="nav-icon">📚</span> Mes Cours
+                </a>
+                <a th:href="@{/student/quiz/history}" class="nav-item">
+                    <span class="nav-icon">📝</span> Historique Quiz
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-danger btn-block">🚪 Déconnexion</button>
+                </form>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="topbar">
+                <h1>📚 Mes Cours</h1>
+            </div>
+            
+            <div class="content-area">
+                <!-- Courses Grid -->
+                <div th:if="${!courses.isEmpty()}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem;">
+                    <div th:each="course : ${courses}" class="card" style="margin-bottom: 0;">
+                        <div style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); padding: 2rem; color: white;">
+                            <h2 style="font-size: 1.5rem; margin-bottom: 0.5rem;" th:text="${course.title}">Titre du cours</h2>
+                            <p style="opacity: 0.9; font-size: 0.95rem;" th:text="${course.description}">Description du cours</p>
+                        </div>
+                        <div class="card-body">
+                            <div style="margin-bottom: 1.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                    <span style="font-weight: 600; color: var(--gray-700);">📅 Créé le:</span>
+                                    <span th:text="${#temporals.format(course.createdAt, 'dd/MM/yyyy')}">01/01/2024</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                    <span style="font-weight: 600; color: var(--gray-700);">👥 Étudiants:</span>
+                                    <span class="badge badge-primary" th:text="${course.enrolledStudents.size()}">0</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="font-weight: 600; color: var(--gray-700);">📊 Statut:</span>
+                                    <span class="badge badge-success">✅ Publié</span>
+                                </div>
+                            </div>
+                            
+                            <a th:href="@{/student/courses/{id}(id=${course.id})}" class="btn btn-primary btn-block">
+                                📖 Accéder au cours
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div th:if="${courses.isEmpty()}" class="card">
+                    <div class="card-body">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📚</div>
+                            <h3>Aucun cours disponible</h3>
+                            <p>Vous n'êtes inscrit à aucun cours pour le moment.</p>
+                            <p style="color: var(--gray-600);">Veuillez contacter votre administrateur pour vous inscrire à des cours.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

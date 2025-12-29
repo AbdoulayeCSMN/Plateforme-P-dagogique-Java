@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Plateforme Pédagogique</title>
+    <link rel="stylesheet" th:href="@{/css/tailwind.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🎓 Admin Panel</h2>
+            </div>
+            
+            <div class="sidebar-user">
+                <div class="user-avatar"
+				     th:text="${admin != null and admin.fullName != null ?
+				              admin.fullName.substring(0,1).toUpperCase() : 'A'}">
+				</div>
+                
+                <div class="user-info">
+                    <h3 th:text="${admin != null ? admin.fullName : 'Administrateur'}">Administrateur</h3>
+                    <div class="user-role">👑 Administrateur</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" th:href="@{/admin/dashboard}" class="nav-item active">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a href="#" th:href="@{/admin/courses}" class="nav-item">
+                    <span class="nav-icon">📚</span> Cours
+                </a>
+                <a href="#" th:href="@{/admin/students}" class="nav-item">
+                    <span class="nav-icon">👨‍🎓</span> Étudiants
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-danger btn-block">
+                        🚪 Déconnexion
+                    </button>
+                </form>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="topbar">
+                <h1>📊 Dashboard</h1>
+                <div>
+                    <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+            </div>
+            
+            <div class="content-area">
+                <!-- Messages Flash -->
+                <div th:if="${success}" class="alert alert-success">
+                    ✅ <span th:text="${success}"></span>
+                </div>
+                <div th:if="${error}" class="alert alert-danger">
+                    ❌ <span th:text="${error}"></span>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">Total Cours</div>
+                                <div class="stat-value" th:text="${totalCourses}">0</div>
+                            </div>
+                            <div class="stat-icon">📚</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card success">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">Total Étudiants</div>
+                                <div class="stat-value" th:text="${totalStudents}">0</div>
+                            </div>
+                            <div class="stat-icon">👨‍🎓</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card warning">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">Cours Publiés</div>
+                                <div class="stat-value" th:text="${publishedCount}">0</div>
+                            </div>
+                            <div class="stat-icon">✅</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card info">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">En Attente</div>
+                                <div class="stat-value" th:text="${draftCount}">0</div>
+                            </div>
+                            <div class="stat-icon">⏳</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Courses -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📚 Cours Récents</h2>
+                        <a th:href="@{/admin/courses/new}" class="btn btn-primary btn-sm">
+                            ➕ Nouveau Cours
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table" th:if="${!courses.isEmpty()}">
+                                <thead>
+                                    <tr>
+                                        <th>Titre</th>
+                                        <th>Créé le</th>
+                                        <th>Statut</th>
+                                        <th>Inscrits</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="course, coursesStat : ${courses}" th:if="${coursesStat.index < 5}">
+                                        <td>
+                                            <strong th:text="${course.title}">Titre du cours</strong>
+                                        </td>
+                                        <td th:text="${#temporals.format(course.createdAt, 'dd/MM/yyyy')}">01/01/2024</td>
+                                        <td>
+                                            <span th:if="${course.published}" class="badge badge-success">Publié</span>
+                                            <span th:unless="${course.published}" class="badge badge-warning">Brouillon</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-info" th:text="${course.enrolledStudents.size()} + ' étudiants'">0 étudiants</span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a th:href="@{/admin/courses/edit/{id}(id=${course.id})}" 
+                                                   class="btn btn-sm btn-secondary" title="Modifier">
+                                                    ✏️
+                                                </a>
+                                                <a th:href="@{/admin/courses/enrollments/{id}(id=${course.id})}" 
+                                                   class="btn btn-sm btn-primary" title="Inscriptions">
+                                                    👥
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <div th:if="${courses.isEmpty()}" class="empty-state">
+                                <div class="empty-state-icon">📚</div>
+                                <h3>Aucun cours disponible</h3>
+                                <p>Commencez par créer votre premier cours</p>
+                                <a th:href="@{/admin/courses/new}" class="btn btn-primary">
+                                    ➕ Créer un cours
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Students -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">👨‍🎓 Étudiants Récents</h2>
+                        <a th:href="@{/admin/students/new}" class="btn btn-success btn-sm">
+                            ➕ Nouvel Étudiant
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table" th:if="${!students.isEmpty()}">
+                                <thead>
+                                    <tr>
+                                        <th>Nom Complet</th>
+                                        <th>Nom d'utilisateur</th>
+                                        <th>Email</th>
+                                        <th>Cours Inscrits</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="student : ${students}" th:if="${studentStat.index < 5}">
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                <div class="user-avatar" style="width: 40px; height: 40px; font-size: 1rem;" 
+                                                     th:text="${student.fullName.substring(0,1).toUpperCase()}">E</div>
+                                                <strong th:text="${student.fullName}">Nom de l'étudiant</strong>
+                                            </div>
+                                        </td>
+                                        <td th:text="${student.username}">username</td>
+                                        <td th:text="${student.email}">email@example.com</td>
+                                        <td>
+                                            <span class="badge badge-primary" th:text="${student.enrolledCourses.size()} + ' cours'">0 cours</span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a th:href="@{/admin/students/edit/{id}(id=${student.id})}" 
+                                                   class="btn btn-sm btn-secondary" title="Modifier">
+                                                    ✏️
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            
+                            <div th:if="${students.isEmpty()}" class="empty-state">
+                                <div class="empty-state-icon">👨‍🎓</div>
+                                <h3>Aucun étudiant inscrit</h3>
+                                <p>Ajoutez des étudiants à la plateforme</p>
+                                <a th:href="@{/admin/students/new}" class="btn btn-success">
+                                    ➕ Ajouter un étudiant
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

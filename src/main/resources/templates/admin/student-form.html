@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${user.id != null ? 'Modifier l\'étudiant' : 'Nouvel étudiant'}">Formulaire Étudiant</title>
+    <link rel="stylesheet" th:href="@{/css/tailwind.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🎓 Admin Panel</h2>
+            </div>
+            
+            <div class="sidebar-user">
+                <div class="user-avatar">A</div>
+                <div class="user-info">
+                    <h3>Administrateur</h3>
+                    <div class="user-role">👑 Administrateur</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a th:href="@{/admin/dashboard}" class="nav-item">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a th:href="@{/admin/courses}" class="nav-item">
+                    <span class="nav-icon">📚</span> Cours
+                </a>
+                <a th:href="@{/admin/students}" class="nav-item active">
+                    <span class="nav-icon">👨‍🎓</span> Étudiants
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-danger btn-block">🚪 Déconnexion</button>
+                </form>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="topbar">
+                <h1 th:text="${user.id != null ? '✏️ Modifier l\'étudiant' : '➕ Nouvel étudiant'}">Formulaire Étudiant</h1>
+                <a th:href="@{/admin/students}" class="btn btn-secondary">← Retour</a>
+            </div>
+            
+            <div class="content-area">
+                <!-- Messages Flash -->
+                <div th:if="${error}" class="alert alert-danger">❌ <span th:text="${error}"></span></div>
+                
+                <!-- Student Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title" th:text="${user.id != null ? 'Modifier les informations de l\'étudiant' : 'Créer un nouvel étudiant'}">
+                            Formulaire étudiant
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${user.id != null ? '/admin/students/edit/' + user.id : '/admin/students/new'}" 
+                              th:object="${user}" 
+                              method="post">
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="fullName">👤 Nom Complet *</label>
+                                <input type="text" 
+                                       id="fullName" 
+                                       th:field="*{fullName}" 
+                                       class="form-control" 
+                                       placeholder="Ex: Jean Dupont"
+                                       required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="username">🔑 Nom d'utilisateur *</label>
+                                <input type="text" 
+                                       id="username" 
+                                       th:field="*{username}" 
+                                       class="form-control" 
+                                       placeholder="Ex: jean.dupont"
+                                       required
+                                       th:readonly="${user.id != null}">
+                                <small th:if="${user.id != null}" style="color: var(--gray-600); font-size: 0.875rem;">
+                                    ℹ️ Le nom d'utilisateur ne peut pas être modifié
+                                </small>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="email">📧 Email *</label>
+                                <input type="email" 
+                                       id="email" 
+                                       th:field="*{email}" 
+                                       class="form-control" 
+                                       placeholder="Ex: jean.dupont@example.com"
+                                       required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="password">
+                                    🔒 Mot de passe <span th:if="${user.id != null}">(laisser vide pour ne pas modifier)</span>
+                                    <span th:unless="${user.id != null}">*</span>
+                                </label>
+                                <input type="password" 
+                                       id="password" 
+                                       th:field="*{password}" 
+                                       class="form-control" 
+                                       placeholder="Entrez un mot de passe sécurisé"
+                                       th:required="${user.id == null}">
+                            </div>
+                            
+                            <div class="form-group" th:if="${user.id != null}">
+                                <label class="form-label">
+                                    <input type="checkbox" th:field="*{enabled}" style="margin-right: 0.5rem;">
+                                    ✅ Compte actif
+                                </label>
+                            </div>
+                            
+                            <div class="d-flex gap-2" style="margin-top: 2rem;">
+                                <button type="submit" class="btn btn-success">
+                                    💾 <span th:text="${user.id != null ? 'Enregistrer les modifications' : 'Créer l\'étudiant'}">Enregistrer</span>
+                                </button>
+                                <a th:href="@{/admin/students}" class="btn btn-secondary">❌ Annuler</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

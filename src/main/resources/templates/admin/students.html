@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Étudiants - Admin</title>
+    <link rel="stylesheet" th:href="@{/css/tailwind.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🎓 Admin Panel</h2>
+            </div>
+            
+            <div class="sidebar-user">
+                <div class="user-avatar">A</div>
+                <div class="user-info">
+                    <h3>Administrateur</h3>
+                    <div class="user-role">👑 Administrateur</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a th:href="@{/admin/dashboard}" class="nav-item">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a th:href="@{/admin/courses}" class="nav-item">
+                    <span class="nav-icon">📚</span> Cours
+                </a>
+                <a th:href="@{/admin/students}" class="nav-item active">
+                    <span class="nav-icon">👨‍🎓</span> Étudiants
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-danger btn-block">🚪 Déconnexion</button>
+                </form>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="topbar">
+                <h1>👨‍🎓 Gestion des Étudiants</h1>
+                <a th:href="@{/admin/students/new}" class="btn btn-success">➕ Nouvel Étudiant</a>
+            </div>
+            
+            <div class="content-area">
+                <!-- Messages Flash -->
+                <div th:if="${success}" class="alert alert-success">✅ <span th:text="${success}"></span></div>
+                <div th:if="${error}" class="alert alert-danger">❌ <span th:text="${error}"></span></div>
+                
+                <!-- Students Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Liste des Étudiants</h2>
+                        <div class="badge badge-info" th:text="${students.size()} + ' étudiants'">0 étudiants</div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive" th:if="${!students.isEmpty()}">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Étudiant</th>
+                                        <th>Nom d'utilisateur</th>
+                                        <th>Email</th>
+                                        <th>Inscrit le</th>
+                                        <th>Cours</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="student : ${students}">
+                                        <td><strong th:text="${student.id}">#1</strong></td>
+                                        <td>
+                                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                <div class="user-avatar" style="width: 40px; height: 40px; font-size: 1rem;" 
+                                                     th:text="${student.fullName != null ? 
+														student.fullName.substring(0,1).toUpperCase() : '?'}">
+                                                     E</div>
+                                                <strong th:text="${student.fullName}">Nom complet</strong>
+                                            </div>
+                                        </td>
+                                        <td th:text="${student.username}">username</td>
+                                        <td th:text="${student.email}">email@example.com</td>
+                                        <td th:text="${student.createdAt != null ? 
+									          #temporals.format(student.createdAt, 'dd/MM/yyyy') : '—'}"
+									                                        >01/01/2024</td>
+                                        <td>
+                                            <span class="badge badge-primary" 
+                                            	th:text="${student.enrolledCourses != null ? student.enrolledCourses.size() : 0}">0</span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${student.enabled}" class="badge badge-success">✅ Actif</span>
+                                            <span th:unless="${student.enabled}" class="badge badge-danger">❌ Inactif</span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a th:href="@{/admin/students/edit/{id}(id=${student.id})}" 
+                                                   class="btn btn-sm btn-secondary" title="Modifier">✏️</a>
+                                                
+                                                <a th:href="@{/admin/students/delete/{id}(id=${student.id})}" 
+                                                   class="btn btn-sm btn-danger" 
+                                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ?')"
+                                                   title="Supprimer">🗑️</a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div th:if="${students.isEmpty()}" class="empty-state">
+                            <div class="empty-state-icon">👨‍🎓</div>
+                            <h3>Aucun étudiant inscrit</h3>
+                            <p>Ajoutez votre premier étudiant à la plateforme</p>
+                            <a th:href="@{/admin/students/new}" class="btn btn-success">➕ Ajouter un étudiant</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

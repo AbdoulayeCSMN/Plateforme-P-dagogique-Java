@@ -1,0 +1,11 @@
+<header>
+    <nav class="navbar">
+        <div class="nav-left">
+            <a th:href="@{/}" class="brand">EduPlatform</a>
+        </div>
+        <div class="nav-right">
+            <span th:text="${#request.remoteUser}">Utilisateur</span>
+            <a th:href="@{/logout}" class="btn-logout">Déconnexion</a>
+        </div>
+    </nav>
+</header>

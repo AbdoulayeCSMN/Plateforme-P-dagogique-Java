@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz - <span th:text="${course.title}">Cours</span></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900" x-data="quizApp()">
+    
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white" th:text="${course.title}">Cours</h1>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Quiz en cours</p>
+                    </div>
+                    
+                    <!-- Timer -->
+                    <div class="flex items-center gap-6">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold" :class="timeRemaining < 60 ? 'text-red-600' : 'text-blue-600'">
+                                <span x-text="Math.floor(timeRemaining / 60)">0</span>:<span x-text="(timeRemaining % 60).toString().padStart(2, '0')">00</span>
+                            </div>
+                            <div class="text-xs text-gray-600 dark:text-gray-400">Temps restant</div>
+                        </div>
+                        
+                        <button @click="submitQuiz" 
+                                class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition">
+                            Terminer le quiz
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Progress Bar -->
+        <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Question <span x-text="currentQuestion + 1">1</span> sur <span x-text="totalQuestions">5</span>
+                    </span>
+                    <div class="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300" 
+                             :style="`width: ${((currentQuestion + 1) / totalQuestions) * 100}%`"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Content -->
+        <main class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+                <div class="p-8">
+                    <!-- Current Question -->
+                    <template x-for="(question, index) in questions" :key="index">
+                        <div x-show="currentQuestion === index" class="animate-fade-in">
+                            <div class="mb-6">
+                                <span class="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-semibold mb-4">
+                                    Question <span x-text="index + 1">1</span>
+                                </span>
+                                <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6" x-text="question.text"></h2>
+                            </div>
+
+                            <!-- Options -->
+                            <div class="space-y-3">
+                                <template x-for="(option, optionIndex) in question.options" :key="optionIndex">
+                                    <div @click="selectOption(index, optionIndex)"
+                                         class="p-4 border-2 rounded-lg cursor-pointer transition-all hover:border-blue-500"
+                                         :class="answers[index] === optionIndex ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600'">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+                                                 :class="answers[index] === optionIndex ? 'border-blue-600 bg-blue-600' : 'border-gray-300'">
+                                                <svg x-show="answers[index] === optionIndex" class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                                </svg>
+                                            </div>
+                                            <span class="text-lg text-gray-700 dark:text-gray-300" x-text="option"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Navigation -->
+                            <div class="flex justify-between items-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                                <button @click="previousQuestion" 
+                                        x-show="currentQuestion > 0"
+                                        class="bg-gray-200 text-gray-800 px-6 py-2 rounded-lg hover:bg-gray-300 transition">
+                                    ← Précédent
+                                </button>
+                                
+                                <div x-show="currentQuestion === 0" class="w-24"></div>
+                                
+                                <button @click="nextQuestion" 
+                                        x-show="currentQuestion < totalQuestions - 1"
+                                        class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                                    Suivant →
+                                </button>
+                                
+                                <button @click="submitQuiz" 
+                                        x-show="currentQuestion === totalQuestions - 1"
+                                        class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                                    Terminer
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Answer Overview -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg mt-6 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Vue d'ensemble</h3>
+                <div class="grid grid-cols-5 sm:grid-cols-10 gap-2">
+                    <template x-for="(question, index) in questions" :key="index">
+                        <button @click="currentQuestion = index"
+                                class="w-10 h-10 rounded-lg font-semibold transition-all"
+                                :class="{
+                                    'bg-blue-600 text-white': currentQuestion === index,
+                                    'bg-green-100 text-green-800': currentQuestion !== index && answers[index] !== undefined,
+                                    'bg-gray-100 text-gray-600': currentQuestion !== index && answers[index] === undefined
+                                }"
+                                x-text="index + 1">
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Quiz Data from Server -->
+    <script th:inline="javascript">
+        const serverQuizData = {
+            quizId: /*[[${quiz.id}]]*/ 0,
+            timeLimitMinutes: /*[[${quiz.timeLimitMinutes}]]*/ 15,
+            questions: [
+                /*[# th:each="q : ${quiz.questions}"]*/
+                {
+                    text: /*[[${q.questionText}]]*/ '',
+                    options: /*[[${q.options}]]*/ [],
+                    correctIndex: /*[[${q.correctOptionIndex}]]*/ 0
+                }/*[# th:if="${!qStat.last}"]*/, /*[/]*/
+                /*[/]*/
+            ]
+        };
+    </script>
+
+    <!-- Alpine.js Quiz Logic -->
+    <script>
+        function quizApp() {
+            return {
+                quizId: serverQuizData.quizId,
+                questions: serverQuizData.questions,
+                currentQuestion: 0,
+                totalQuestions: serverQuizData.questions.length,
+                answers: {},
+                timeRemaining: serverQuizData.timeLimitMinutes * 60,
+                timerInterval: null,
+                startTime: Date.now(),
+
+                init() {
+                    console.log('Quiz initialized:', this.questions.length, 'questions');
+                    this.startTimer();
+                },
+
+                startTimer() {
+                    this.timerInterval = setInterval(() => {
+                        this.timeRemaining--;
+                        if (this.timeRemaining <= 0) {
+                            this.submitQuiz();
+                        }
+                    }, 1000);
+                },
+
+                selectOption(questionIndex, optionIndex) {
+                    this.answers[questionIndex] = optionIndex;
+                },
+
+                nextQuestion() {
+                    if (this.currentQuestion < this.totalQuestions - 1) {
+                        this.currentQuestion++;
+                    }
+                },
+
+                previousQuestion() {
+                    if (this.currentQuestion > 0) {
+                        this.currentQuestion--;
+                    }
+                },
+
+                async submitQuiz() {
+                    clearInterval(this.timerInterval);
+                    
+                    const timeSpent = Math.floor((Date.now() - this.startTime) / 60000);
+                    
+                    const answeredCount = Object.keys(this.answers).length;
+                    if (answeredCount < this.totalQuestions) {
+                        if (!confirm(`Vous n'avez répondu qu'à ${answeredCount} questions sur ${this.totalQuestions}. Voulez-vous vraiment soumettre ?`)) {
+                            this.startTimer();
+                            return;
+                        }
+                    }
+
+                    try {
+                        const response = await fetch('/student/quiz/submit', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                quizId: this.quizId,
+                                answers: this.answers,
+                                timeSpentMinutes: timeSpent
+                            })
+                        });
+
+                        const result = await response.json();
+                        
+                        if (response.ok) {
+                            window.location.href = `/student/quiz/${result.quizId}`;
+                        } else {
+                            alert('Erreur: ' + result.error);
+                            this.startTimer();
+                        }
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        alert('Erreur lors de la soumission du quiz');
+                        this.startTimer();
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</body>
+</html>

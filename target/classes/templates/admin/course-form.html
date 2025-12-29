@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${course.id != null ? 'Modifier le cours' : 'Nouveau cours'}">Formulaire Cours</title>
+    <link rel="stylesheet" th:href="@{/css/tailwind.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>Admin Panel</h2>
+            </div>
+            
+            <div class="sidebar-user">
+                <div class="user-avatar">A</div>
+                <div class="user-info">
+                    <h3>Administrateur</h3>
+                    <div class="user-role">Administrateur</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a th:href="@{/admin/dashboard}" class="nav-item">
+                    <span class="nav-icon"></span> Dashboard
+                </a>
+                <a th:href="@{/admin/courses}" class="nav-item active">
+                    <span class="nav-icon"></span> Cours
+                </a>
+                <a th:href="@{/admin/students}" class="nav-item">
+                    <span class="nav-icon"></span> Étudiants
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-danger btn-block">🚪 Déconnexion</button>
+                </form>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="topbar">
+                <h1 th:text="${course.id != null ? '✏️ Modifier le cours' : '➕ Nouveau cours'}">Formulaire Cours</h1>
+                <a th:href="@{/admin/courses}" class="btn btn-secondary">← Retour</a>
+            </div>
+            
+            <div class="content-area">
+                <!-- Messages Flash -->
+                <div th:if="${error}" class="alert alert-danger">❌<span th:text="${error}"></span></div>
+                
+                <!-- Course Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title" th:text="${course.id != null ? 'Modifier les informations du cours' : 'Créer un nouveau cours'}">
+                            Formulaire de cours
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="${course.id != null ? '/admin/courses/edit/' + course.id : '/admin/courses/new'}" 
+                              th:object="${course}" 
+                              method="post">
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="title">Titre du cours *</label>
+                                <input type="text" 
+                                       id="title" 
+                                       th:field="*{title}" 
+                                       class="form-control" 
+                                       placeholder="Ex: Introduction à Spring Boot"
+                                       required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="description">Description</label>
+                                <textarea id="description" 
+                                          th:field="*{description}" 
+                                          class="form-control" 
+                                          rows="3"
+                                          placeholder="Décrivez brièvement le contenu du cours..."></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="content">Contenu du cours *</label>
+                                <textarea id="content" 
+                                          th:field="*{content}" 
+                                          class="form-control" 
+                                          rows="15"
+                                          placeholder="Saisissez le contenu pédagogique complet du cours..."
+                                          required></textarea>
+                                <small style="color: var(--gray-600); font-size: 0.875rem;">
+                                    Ce contenu sera utilisé pour générer les quiz IA. Soyez précis et détaillé.
+                                </small>
+                            </div>
+                            
+                            <div class="d-flex gap-2" style="margin-top: 2rem;">
+                                <button type="submit" class="btn btn-primary">
+                                    <span th:text="${course.id != null ? 'Enregistrer les modifications' : 'Créer le cours'}">Enregistrer</span>
+                                </button>
+                                <a th:href="@{/admin/courses}" class="btn btn-secondary">Annuler</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

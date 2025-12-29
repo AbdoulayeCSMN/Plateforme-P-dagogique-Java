@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Erreur [[${status}]]</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #020617;
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --border: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #020617, #0f172a);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .error-container {
+            max-width: 900px;
+            width: 100%;
+            background: var(--card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 60px rgba(0,0,0,.6);
+            overflow: hidden;
+        }
+
+        .error-header {
+            padding: 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .error-code {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--danger);
+        }
+
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .error-body {
+            padding: 2rem;
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .error-box {
+            background: #020617;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .error-box h3 {
+            margin: 0 0 .5rem;
+            font-size: .9rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--muted);
+        }
+
+        .error-box pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: .85rem;
+            line-height: 1.4;
+            color: #f8fafc;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: .7rem 1.2rem;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #1e293b;
+            color: var(--text);
+        }
+
+        .footer {
+            padding: 1rem 2rem;
+            border-top: 1px solid var(--border);
+            font-size: .8rem;
+            color: var(--muted);
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="error-container">
+
+    <!-- HEADER -->
+    <div class="error-header">
+        <div class="error-code" th:text="${status}">500</div>
+        <div>
+            <div class="error-title" th:text="${error}">Internal Server Error</div>
+            <div th:text="${path}">/unknown</div>
+        </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="error-body">
+
+        <div class="error-box">
+            <h3>Message</h3>
+            <pre th:text="${message} ?: 'Aucun message disponible'">Erreur</pre>
+        </div>
+
+        <div class="error-box">
+            <h3>Timestamp</h3>
+            <pre th:text="${timestamp}">date</pre>
+        </div>
+
+        <!-- Affiché uniquement en DEV -->
+        <div class="error-box" th:if="${trace}">
+            <h3>Stacktrace (Debug)</h3>
+            <pre th:text="${trace}"></pre>
+        </div>
+
+        <div class="actions">
+            <a th:href="@{/}" class="btn btn-primary">🏠 Accueil</a>
+            <button onclick="history.back()" class="btn btn-secondary">↩ Retour</button>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        Plateforme pédagogique • Mode debug activé
+    </div>
+
+</div>
+
+</body>
+</html>

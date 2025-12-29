@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Étudiant - Plateforme Pédagogique</title>
+    <link rel="stylesheet" th:href="@{/css/tailwind.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>🎓 Espace Étudiant</h2>
+            </div>
+            
+            <div class="sidebar-user">
+                <div class="user-avatar" th:text="${student != null ? student.fullName.substring(0,1).toUpperCase() : 'E'}">E</div>
+                <div class="user-info">
+                    <h3 th:text="${student != null ? student.fullName : 'Étudiant'}">Étudiant</h3>
+                    <div class="user-role">👨‍🎓 Étudiant</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a th:href="@{/student/dashboard}" class="nav-item active">
+                    <span class="nav-icon">📊</span> Dashboard
+                </a>
+                <a th:href="@{/student/courses}" class="nav-item">
+                    <span class="nav-icon">📚</span> Mes Cours
+                </a>
+                <a th:href="@{/student/quiz/history}" class="nav-item">
+                    <span class="nav-icon">📝</span> Historique Quiz
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="btn btn-danger btn-block">🚪 Déconnexion</button>
+                </form>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="topbar">
+                <h1>📊 Mon Dashboard</h1>
+                <div>
+                    <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}"></span>
+                </div>
+            </div>
+            
+            <div class="content-area">
+                <!-- Welcome Message -->
+                <div class="alert alert-info">
+                    👋 Bienvenue <strong th:text="${student.fullName}">Étudiant</strong> ! Continuez votre apprentissage et réussissez vos quiz.
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">Cours Inscrits</div>
+                                <div class="stat-value" th:text="${totalCourses}">0</div>
+                            </div>
+                            <div class="stat-icon">📚</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card success">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">Quiz Complétés</div>
+                                <div class="stat-value" th:text="${recentQuizzes.size()}">0</div>
+                            </div>
+                            <div class="stat-icon">✅</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card warning">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">Score Moyen</div>
+                                <div class="stat-value">
+                                    <span th:if="${!recentQuizzes.isEmpty()}"
+									      th:text="${#numbers.formatDecimal(averageScore, 1, 1)} + '%'">
+									    0%
+									</span>
+									<span th:if="${recentQuizzes.isEmpty()}">-</span>
+                                    
+                                </div>
+                            </div>
+                            <div class="stat-icon">📈</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card info">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">À Valider</div>
+                                <div class="stat-value" th:text="${totalCourses}">0</div>
+                            </div>
+                            <div class="stat-icon">🎯</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- My Courses -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📚 Mes Cours</h2>
+                        <a th:href="@{/student/courses}" class="btn btn-primary btn-sm">Voir tous</a>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${!courses.isEmpty()}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                            <div th:each="course : ${courses}" th:if="${courseStat.index < 4}" 
+                                 style="background: var(--gray-50); border-radius: var(--radius-lg); padding: 1.5rem; border-left: 4px solid var(--primary-color); transition: var(--transition);"
+                                 onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='var(--shadow-lg)'"
+                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow)'">
+                                <h3 style="font-size: 1.25rem; margin-bottom: 0.75rem; color: var(--gray-900);" th:text="${course.title}">Titre du cours</h3>
+                                <p style="color: var(--gray-600); margin-bottom: 1rem; font-size: 0.875rem;" 
+                                   th:text="${course.description != null ? (course.description.length() > 100 ? course.description.substring(0, 100) + '...' : course.description) : 'Aucune description'}">
+                                    Description
+                                </p>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span class="badge badge-success">✅ Publié</span>
+                                    <a th:href="@{/student/courses/{id}(id=${course.id})}" class="btn btn-sm btn-primary">
+                                        📖 Accéder
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div th:if="${courses.isEmpty()}" class="empty-state">
+                            <div class="empty-state-icon">📚</div>
+                            <h3>Aucun cours disponible</h3>
+                            <p>Vous n'êtes inscrit à aucun cours pour le moment. Contactez votre administrateur.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Quiz Results -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">📝 Quiz Récents</h2>
+                        <a th:href="@{/student/quiz/history}" class="btn btn-secondary btn-sm">Voir l'historique</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive" th:if="${!recentQuizzes.isEmpty()}">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Cours</th>
+                                        <th>Date</th>
+                                        <th>Questions</th>
+                                        <th>Score</th>
+                                        <th>Difficulté</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="quiz : ${recentQuizzes}">
+                                        <td>
+                                            <strong th:text="${quiz.course.title}">Titre du cours</strong>
+                                        </td>
+                                        <td th:text="${#temporals.format(quiz.attemptDate, 'dd/MM/yyyy HH:mm')}">01/01/2024</td>
+                                        <td>
+                                            <span th:text="${quiz.correctAnswers} + '/' + ${quiz.totalQuestions}">0/10</span>
+                                        </td>
+                                        <td>
+                                            <span th:classappend="${quiz.score >= 70 ? 'badge-success' : (quiz.score >= 50 ? 'badge-warning' : 'badge-danger')}" 
+                                                  class="badge"
+                                                  th:text="${#numbers.formatDecimal(quiz.score, 1, 1)} + '%'">
+                                                0%
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span th:if="${quiz.difficulty == 'EASY'}" class="badge badge-success">😊 Facile</span>
+                                            <span th:if="${quiz.difficulty == 'MEDIUM'}" class="badge badge-warning">🤔 Moyen</span>
+                                            <span th:if="${quiz.difficulty == 'HARD'}" class="badge badge-danger">😰 Difficile</span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/student/quiz/{id}(id=${quiz.id})}" class="btn btn-sm btn-primary">
+                                                👁️ Voir
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div th:if="${recentQuizzes.isEmpty()}" class="empty-state">
+                            <div class="empty-state-icon">📝</div>
+                            <h3>Aucun quiz complété</h3>
+                            <p>Commencez par générer votre premier quiz dans un cours</p>
+                            <a th:href="@{/student/courses}" class="btn btn-primary">Accéder aux cours</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

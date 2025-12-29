@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestion des cours | Admin</title>
+    <link rel="stylesheet" th:href="@{/css/tailwind.css}">
+</head>
+
+<body>
+<div class="dashboard-container">
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>Plateforme</h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a th:href="@{/admin/dashboard}" class="nav-item">
+                <span class="nav-icon">🏠</span> Dashboard
+            </a>
+            <a th:href="@{/admin/courses}" class="nav-item active">
+                <span class="nav-icon">📚</span> Cours
+            </a>
+            <a th:href="@{/admin/students}" class="nav-item">
+                <span class="nav-icon">🎓</span> Étudiants
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a th:href="@{/logout}" class="btn btn-danger btn-block">Déconnexion</a>
+        </div>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content">
+
+        <!-- Topbar -->
+        <div class="topbar">
+            <h1>Gestion des cours</h1>
+            <a th:href="@{/admin/courses/new}" class="btn btn-primary">
+                ➕ Nouveau cours
+            </a>
+        </div>
+
+        <!-- Content -->
+        <div class="content-area">
+
+            <!-- Alerts -->
+            <div th:if="${success}" class="alert alert-success">
+                ✅ <span th:text="${success}"></span>
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger">
+                ❌ <span th:text="${error}"></span>
+            </div>
+
+            <!-- Courses Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Liste des cours</h2>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="table-responsive" th:if="${#lists.size(courses) > 0}">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Titre</th>
+                                <th>Statut</th>
+                                <th>Étudiants</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr th:each="course : ${courses}">
+                                <td th:text="${course.id}"></td>
+                                <td th:text="${course.title}"></td>
+
+                                <!-- Status -->
+                                <td>
+                                    <span th:if="${course.published}"
+                                          class="badge badge-success">Publié</span>
+                                    <span th:unless="${course.published}"
+                                          class="badge badge-warning">Brouillon</span>
+                                </td>
+
+                                <!-- Enrolled students -->
+                                <td th:text="${#lists.size(course.enrolledStudents)}"></td>
+
+                                <!-- Actions -->
+                                <td>
+                                    <div class="action-buttons">
+
+                                        <a th:href="@{'/admin/courses/edit/' + ${course.id}}"
+                                           class="btn btn-secondary btn-sm">
+                                            ✏️
+                                        </a>
+
+                                        <a th:href="@{'/admin/courses/enrollments/' + ${course.id}}"
+                                           class="btn btn-info btn-sm">
+                                            👥
+                                        </a>
+
+                                        <a th:if="${!course.published}"
+                                           th:href="@{'/admin/courses/publish/' + ${course.id}}"
+                                           class="btn btn-success btn-sm">
+                                            🚀
+                                        </a>
+
+                                        <a th:if="${course.published}"
+                                           th:href="@{'/admin/courses/unpublish/' + ${course.id}}"
+                                           class="btn btn-warning btn-sm">
+                                            ⏸️
+                                        </a>
+
+                                        <a th:href="@{'/admin/courses/delete/' + ${course.id}}"
+                                           class="btn btn-danger btn-sm"
+                                           onclick="return confirm('Supprimer ce cours ?');">
+                                            🗑️
+                                        </a>
+                                        
+                                        <a th:if="${course.published}" 
+										   th:href="@{/admin/courses/index/{id}(id=${course.id})}" 
+										   class="btn btn-sm btn-warning" 
+										   title="Indexer pour IA">
+										    Indexer
+										</a>
+
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Empty state -->
+                    <div th:if="${#lists.isEmpty(courses)}" class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <h3>Aucun cours</h3>
+                        <p>Commencez par créer un nouveau cours.</p>
+                        <a th:href="@{/admin/courses/new}" class="btn btn-primary">
+                            ➕ Créer un cours
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+</body>
+</html>

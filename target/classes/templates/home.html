@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Accueil</title>
+</head>
+<body>
+
+<h2>Bienvenue</h2>
+
+<div th:if="${#authorization.expression('hasRole(''ADMIN'')')}">
+    <a th:href="@{/admin/courses}">Gestion des cours</a><br/>
+    <a th:href="@{/admin/students}">Gestion des étudiants</a>
+</div>
+
+<div th:if="${#authorization.expression('hasRole(''ETUDIANT'')')}">
+    <a th:href="@{/student/courses}">Mes cours</a>
+</div>
+
+<br/>
+<a th:href="@{/logout}">Déconnexion</a>
+
+</body>
+</html>
